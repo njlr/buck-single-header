@@ -24,11 +24,21 @@ single_header = '\n'.join([
     '',
   ])
 
+# We need to be more careful escaping the string for Batch
+def batch_echo_line(x):
+  if x == '':
+    return 'echo.'
+  return 'echo ' + x.replace('<', '^<').replace('>', '^>')
+
+def batch_echo(s):
+  return '( ' + ' & '.join([ batch_echo_line(x) for x in s.split('\n') ]) + ' )'
+
 # Build target for the generated header
 genrule(
   name = 'single-header',
   out = 'mathutils.hpp',
-  cmd = 'echo "' + single_header + '" > $OUT',
+  cmd = 'echo "' + single_header + '" > $OUT', 
+  cmd_exe = batch_echo(single_header) + ' > $OUT', 
 )
 
 cxx_library(
